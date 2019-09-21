@@ -191,18 +191,55 @@ twentytwenty.focusManagement = {
 	},
 
 	focusLoop: function () {
-		document.addEventListener( 'focusin', function ( event ) {
+		var menuModal = document.querySelector( '.menu-modal' );
+		var searchModal = document.querySelector( '.search-modal' );
+
+		// Set focusable elements inside menu modal
+		if ( menuModal ) {
+			var focusableMenuModalElements = menuModal.querySelectorAll( [ 'a[href]', 'area[href]', 'input:not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', 'button:not([disabled])', 'iframe', 'object', 'embed', '[contenteditable]', '[tabindex]:not([tabindex^="-"])' ] );
+			var firstFocusableElement = focusableMenuModalElements[ 0 ];
+			var lastFocusableElement = focusableMenuModalElements[ focusableMenuModalElements.length - 1 ];
+
+			// If on mobile, close menu modal button is hidden via CSS
+			// In that case let's use mobile search toggle button as first element
+			if ( 'none' === window.getComputedStyle( firstFocusableElement, null ).getPropertyValue( 'display' ) ) {
+				firstFocusableElement = document.querySelector( '.mobile-search-toggle' );
+			}
+		}
+
+		// Set focusable elements inside search modal
+		if ( searchModal ) {
+			var focusableSearchElements = searchModal.querySelectorAll( [ 'a[href]', 'area[href]', 'input:not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', 'button:not([disabled])', 'iframe', 'object', 'embed', '[contenteditable]', '[tabindex]:not([tabindex^="-"])' ] );
+			var firstFocusableSearchElement = focusableSearchElements[ 0 ];
+			var lastFocusableSearchElement = focusableSearchElements[ focusableSearchElements.length - 1 ];
+		}
+
+		document.addEventListener( 'keydown', function ( event ) {
 			var element = event.target;
-			var menuModal = document.querySelector( '.menu-modal' );
-			var headerToggles = document.querySelector( '.header-toggles' );
-			var searchModal = document.querySelector( '.search-modal' );
-			if ( menuModal && menuModal.classList.contains( '.active' ) ) {
-				if ( ! menuModal.contains( element ) && headerToggles && ! headerToggles.contains( element ) ) {
-					document.querySelector( '.close-nav-toggle' ).focus();
+
+			if ( menuModal && menuModal.classList.contains( 'active' ) ) {
+				// Redirect last Tab to the first focusable element
+				if ( element === lastFocusableElement && 9 === event.keyCode && ! event.shiftKey ) {
+					event.preventDefault();
+					firstFocusableElement.focus();
 				}
-			} else if ( searchModal && ! searchModal.classList.contains( '.active' ) ) {
-				if ( ! searchModal.contains( element ) ) {
-					searchModal.querySelector( '.search-field' ).focus();
+
+				// Redirect first Shift+Tab to the last focusable element
+				if ( element === firstFocusableElement && 9 === event.keyCode && event.shiftKey ) {
+					event.preventDefault();
+					lastFocusableElement.focus();
+				}
+			} else if ( searchModal && searchModal.classList.contains( 'active' ) ) {
+				// Redirect last Tab to the first focusable element
+				if ( element === lastFocusableSearchElement && 9 === event.keyCode && ! event.shiftKey ) {
+					event.preventDefault();
+					firstFocusableSearchElement.focus();
+				}
+
+				// Redirect first Shift+Tab to the last focusable element
+				if ( element === firstFocusableSearchElement && 9 === event.keyCode && event.shiftKey ) {
+					event.preventDefault();
+					lastFocusableSearchElement.focus();
 				}
 			}
 		} );
